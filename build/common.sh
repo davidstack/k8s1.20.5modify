@@ -20,7 +20,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-
+set -x
 # Unset CDPATH, having it set messes up with script import paths
 unset CDPATH
 

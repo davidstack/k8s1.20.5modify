@@ -166,8 +166,9 @@ func (m *GracefulTerminationManager) deleteRsFunc(rsToDelete *listItem) (bool, e
 			// For UDP and SCTP traffic, no graceful termination, we immediately delete the RS
 			//     (existing connections will be deleted on the next packet because sysctlExpireNoDestConn=1)
 			// For other protocols, don't delete until all connections have expired)
-			if utilipvs.IsRsGracefulTerminationNeeded(rsToDelete.VirtualServer.Protocol) && rs.ActiveConn != 0 {
-				klog.V(5).Infof("Not deleting, RS %v: %v ActiveConn, %v InactiveConn", rsToDelete.String(), rs.ActiveConn, rs.InactiveConn)
+			if utilipvs.IsRsGracefulTerminationNeeded(rsToDelete.VirtualServer.Protocol) && rs.Weight != 0 {
+				// klog.V(5).Infof("Not deleting, RS %v: %v ActiveConn, %v InactiveConn", rsToDelete.String(), rs.ActiveConn, rs.InactiveConn)
+				klog.V(5).Infof("Not deleting, RS %v: Weight=%v", rsToDelete.String(), rs.Weight)
 				return false, nil
 			}
 			klog.V(5).Infof("Deleting rs: %s", rsToDelete.String())

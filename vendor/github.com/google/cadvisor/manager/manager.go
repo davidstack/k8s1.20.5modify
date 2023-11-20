@@ -35,7 +35,7 @@ import (
 	"github.com/google/cadvisor/events"
 	"github.com/google/cadvisor/fs"
 	info "github.com/google/cadvisor/info/v1"
-	"github.com/google/cadvisor/info/v2"
+	v2 "github.com/google/cadvisor/info/v2"
 	"github.com/google/cadvisor/machine"
 	"github.com/google/cadvisor/nvm"
 	"github.com/google/cadvisor/perf"
@@ -691,6 +691,13 @@ func (m *manager) GetRequestedContainersInfo(containerName string, options v2.Re
 	}
 	for name, data := range containers {
 		info, err := m.containerDataToContainerInfo(data, &query)
+
+		//add for https://github.com/google/cadvisor/pull/2868/files
+		if err == memory.ErrDataNotFound {
+			klog.Warningf("Error getting data for container %s because of race condition", containerName)
+			continue
+		}
+
 		if err != nil {
 			errs.append(name, "containerDataToContainerInfo", err)
 		}

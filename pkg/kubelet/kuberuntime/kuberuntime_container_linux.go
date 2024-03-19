@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 /*
@@ -28,6 +29,7 @@ import (
 	"k8s.io/klog/v2"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	kubefeatures "k8s.io/kubernetes/pkg/features"
+	"k8s.io/kubernetes/pkg/kubelet/cm"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/qos"
 )
@@ -61,11 +63,11 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 	// API server does this for new containers, but we repeat this logic in Kubelet
 	// for containers running on existing Kubernetes clusters.
 	if cpuRequest.IsZero() && !cpuLimit.IsZero() {
-		cpuShares = milliCPUToShares(cpuLimit.MilliValue())
+		cpuShares = int64(cm.MilliCPUToShares(cpuLimit.MilliValue()))
 	} else {
 		// if cpuRequest.Amount is nil, then milliCPUToShares will return the minimal number
 		// of CPU shares.
-		cpuShares = milliCPUToShares(cpuRequest.MilliValue())
+		cpuShares = int64(cm.MilliCPUToShares(cpuRequest.MilliValue()))
 	}
 	lc.Resources.CpuShares = cpuShares
 	if memoryLimit != 0 {

@@ -151,9 +151,12 @@ func newDockerContainerHandler(
 	// FIXME: Give `otherStorageDir` a more descriptive name.
 	otherStorageDir := path.Join(storageDir, pathToContainersDir, id)
 
-	rwLayerID, err := getRwLayerID(id, storageDir, storageDriver, dockerVersion)
-	if err != nil {
-		return nil, err
+	rwLayerID := ""
+	if storageDriver != nydusStorageDriver {
+		rwLayerID, err = getRwLayerID(id, storageDir, storageDriver, dockerVersion)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Determine the rootfs storage dir OR the pool name to determine the device.
@@ -179,6 +182,8 @@ func newDockerContainerHandler(
 		}
 		zfsParent = status.DriverStatus[dockerutil.DriverStatusParentDataset]
 		zfsFilesystem = path.Join(zfsParent, rwLayerID)
+	case nydusStorageDriver:
+		rootfsStorageDir = path.Join(storageDir, "rootfs", string(storageDriver), id)
 	}
 
 	// We assume that if Inspect fails then the container is not known to docker.
